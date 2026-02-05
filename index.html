@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>આશિષ માકાણી - મંડી હિસાબ</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 10px; padding-bottom: 60px; }
+        .container { max-width: 700px; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin: auto; border: 2px solid #b71c1c; }
+        .brand-header { text-align: center; background: #b71c1c; color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .brand-header h1 { margin: 0; font-size: 24px; }
+        .grading-type-box { background: #fff3e0; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #ff9800; text-align: center; }
+        .grading-select { padding: 5px 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .master-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .master-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ffca28; background: #fff8e1; font-weight: bold; cursor: pointer; font-size: 12px; } 
+        .header-row { display: flex; font-weight: bold; background: #f0f0f0; padding: 10px; border-radius: 8px; margin-bottom: 5px; font-size: 12px; text-align: center; }
+        .grade-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        input { width: 100%; padding: 8px 2px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; text-align: center; }
+        .readonly-kg { background: #e3f2fd; font-weight: bold; color: #1565c0; border: 1px solid #bbdefb; }
+        select { padding: 8px 0; border-radius: 6px; background: #fff; border: 1px solid #ccc; width: 65px; font-size: 12px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-calc { flex: 2; background: #1b5e20; color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-clear { flex: 1; background: #d32f2f; color: white; border: none; padding: 15px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; } 
+        .result-box { margin-top: 20px; padding: 15px; background: #f1f8e9; border: 2px solid #2e7d32; border-radius: 15px; display: none; }
+        .result-box p { margin: 8px 0; font-size: 16px; display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; }
+        .total-highlight { color: #fff; font-weight: bold; font-size: 22px; text-align: center; margin-top: 15px; background: #d32f2f; padding: 12px; border-radius: 10px; }
+        .footer { text-align: center; margin-top: 15px; font-size: 12px; color: #666; font-weight: bold; }
+        #ad-banner { position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; background: #f0f0f0; text-align: center; line-height: 50px; font-size: 12px; color: #666; z-index: 1000; border-top: 1px solid #ccc; }
+    </style>
+</head>
+<body> 
+
+<div class="container">
+    <div class="brand-header">
+        <h1>આશિષ માકાણી</h1>
+        <p style="margin:0">મંડી હિસાબ સોફ્ટવેર</p>
+    </div> 
+
+    <div class="grading-type-box">
+        <label>ગ્રેડિંગ કોણે કર્યું?</label>
+        <select id="gradingMode" class="grading-select">
+            <option value="mandi">મંડી ગ્રેડિંગ (ચાર્જ ₹13)</option>
+            <option value="farmer">ખેડૂત ગ્રેડિંગ (ચાર્જ ફ્રી)</option>
+        </select>
+    </div>
+
+    <div class="master-controls">
+        <button class="master-btn" onclick="setAllTypes('20')">બધા ૨૦ કિલો કરો</button>
+        <button class="master-btn" onclick="setAllTypes('1')">બધા ૧ કિલો કરો</button>
+    </div> 
+
+    <div class="header-row">
+        <div style="flex:0.4">નં.</div>
+        <div style="flex:1.5">વજન</div>
+        <div style="flex:1.5">ભાવ</div>
+        <div style="flex:1.2">એકમ</div>
+        <div style="flex:1.5">1 kg ભાવ</div>
+    </div>
+    
+    <form id="calcForm">
+        <div id="grades-container"></div>
+    </form> 
+
+    <div class="btn-group">
+        <button class="btn-calc" onclick="calculate()">હિસાબ કરો</button>
+        <button class="btn-clear" onclick="resetForm()">ક્લીઅર</button>
+    </div> 
+
+    <div id="results" class="result-box">
+        <p><span>કુલ વજન:</span> <span id="resW">0</span></p>
+        <p><span>કુલ વેચાણ:</span> <span id="resS">0</span></p>
+        <p><span>ખર્ચ:</span> <span id="resExp">0</span></p>
+        <p><span>મંડી ચાર્જ (3%):</span> <span id="resM">0</span></p>
+        <p style="color:#1b5e20; font-weight:bold; border:none"><span>ચોખ્ખી આવક:</span> <span id="resNet">0</span></p>
+        <div class="total-highlight" id="resAvg">સરેરાશ: ₹ 0 /kg</div>
+    </div> 
+
+    <div class="footer">Developed by: Ashish Makani</div>
+</div> 
+
+<div id="ad-banner">જાહેરાત અહીં દેખાશે</div>
+
+<script>
+    const container = document.getElementById('grades-container');
+    for (let i = 1; i <= 10; i++) {
+        container.innerHTML += `
+            <div class="grade-row">
+                <span style="width:20px; font-weight:bold;">${i}</span>
+                <input type="number" id="w${i}" placeholder="kg" oninput="updatePerKg(${i})">
+                <input type="number" id="p${i}" placeholder="₹" oninput="updatePerKg(${i})">
+                <select id="t${i}" class="t-select" onchange="updatePerKg(${i})">
+                    <option value="1">1 kg</option>
+                    <option value="20">20 kg</option>
+                </select>
+                <input type="text" id="perKg${i}" class="readonly-kg" placeholder="0" readonly>
+            </div>
+        `;
+    } 
+
+    function updatePerKg(id) {
+        let p = parseFloat(document.getElementById(`p${id}`).value) || 0;
+        let type = parseFloat(document.getElementById(`t${id}`).value);
+        let display = document.getElementById(`perKg${id}`);
+        display.value = (type === 20) ? (p / 20).toFixed(2) : p.toFixed(2);
+    } 
+
+    function setAllTypes(val) {
+        const selects = document.getElementsByClassName('t-select');
+        for (let s of selects) { s.value = val; }
+        for (let i = 1; i <= 10; i++) { updatePerKg(i); }
+    }
+
+    function calculate() {
+        let totalW = 0, totalS = 0;
+        let mode = document.getElementById('gradingMode').value;
+        for (let i = 1; i <= 10; i++) {
+            let w = parseFloat(document.getElementById(`w${i}`).value) || 0;
+            let p = parseFloat(document.getElementById(`p${i}`).value) || 0;
+            let t = parseFloat(document.getElementById(`t${i}`).value);
+            totalW += w;
+            totalS += (t === 20) ? (w / 20 * p) : (w * p);
+        }
+        if (totalW === 0) return;
+        let exp = (totalW / 20) * ((mode === 'mandi' ? 13 : 0) + 15);
+        let mandi = totalS * 0.03;
+        let net = totalS - (exp + mandi);
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('resW').innerText = totalW.toFixed(2) + " kg";
+        document.getElementById('resS').innerText = "₹ " + totalS.toFixed(2);
+        document.getElementById('resExp').innerText = "₹ " + exp.toFixed(2);
+        document.getElementById('resM').innerText = "₹ " + mandi.toFixed(2);
+        document.getElementById('resNet').innerText = "₹ " + net.toFixed(2);
+        document.getElementById('resAvg').innerText = "સરેરાશ: ₹ " + (net / totalW).toFixed(2) + " /kg";
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function resetForm() {
+        document.getElementById('calcForm').reset();
+        document.getElementById('results').style.display = 'none';
+    }
+</script> 
+</body>
+</html>
